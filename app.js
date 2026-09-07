@@ -3,15 +3,33 @@ const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 const titleElement = document.querySelector("#paperTitle");
 const yearElement = document.querySelector("#paperYear");
 const subtitleElement = document.querySelector("#paperSubtitle");
+const paperSizeElement = document.querySelector("#paperSize");
+const weekStartElement = document.querySelector("#weekStart");
 const printButton = document.querySelector("#printButton");
 const addEventButton = document.querySelector("#addEventButton");
+const clearEventsButton = document.querySelector("#clearEventsButton");
 const selectionStatus = document.querySelector("#selectionStatus");
 const calendarLayout = document.querySelector("#calendarLayout");
 const eventLegend = document.querySelector("#eventLegend");
 const events = [];
+const paperSizes = {
+  a4: { width: "210mm", height: "297mm", print: "A4" },
+  letter: { width: "215.9mm", height: "279.4mm", print: "Letter" }
+};
 let selectionStart = null;
 let selectionEnd = null;
 let isSelecting = false;
+
+function applyPaperSize() {
+  const size = paperSizes[paperSizeElement.value];
+  document.documentElement.style.setProperty("--paper-width", size.width);
+  document.documentElement.style.setProperty("--paper-height", size.height);
+  document.querySelector("#printPageStyle")?.remove();
+  const printPageStyle = document.createElement("style");
+  printPageStyle.id = "printPageStyle";
+  printPageStyle.textContent = `@media print { @page { size: ${size.print} portrait; margin: 0; } }`;
+  document.head.append(printPageStyle);
+}
 
 // Requires a four-digit Gregorian year; invalid input disables printing and preserves the last valid grid.
 function validYear() {
@@ -26,7 +44,9 @@ function createMonth(year, monthIndex) {
   month.innerHTML = `<h2 class="month-name">${monthNames[monthIndex]}</h2><div class="weekdays"></div><div class="days"></div>`;
   const weekdays = month.querySelector(".weekdays");
   const days = month.querySelector(".days");
-  dayNames.forEach((dayName) => {
+  const weekStart = Number(weekStartElement.value);
+  const orderedDayNames = [...dayNames.slice(weekStart), ...dayNames.slice(0, weekStart)];
+  orderedDayNames.forEach((dayName) => {
     const cell = document.createElement("span");
     cell.className = "weekday";
     cell.textContent = dayName;
@@ -34,7 +54,8 @@ function createMonth(year, monthIndex) {
   });
   const firstDay = new Date(year, monthIndex, 1).getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  for (let i = 0; i < firstDay; i += 1) {
+  const offset = (firstDay - weekStart + 7) % 7;
+  for (let i = 0; i < offset; i += 1) {
     const empty = document.createElement("span");
     empty.className = "day empty";
     days.append(empty);
@@ -169,6 +190,7 @@ function applyDateStates() {
   });
   const selectedCount = selectedDates.size;
   addEventButton.disabled = selectedCount === 0;
+  clearEventsButton.disabled = events.length === 0;
   selectionStatus.textContent = selectedCount > 0 ? `${selectedCount} day${selectedCount === 1 ? "" : "s"} selected` : "";
 }
 
@@ -228,6 +250,12 @@ addEventButton.addEventListener("click", () => {
   renderLegend();
   applyDateStates();
 });
+clearEventsButton.addEventListener("click", () => {
+  if (!events.length || !window.confirm("Remove all events?")) return;
+  events.length = 0;
+  renderLegend();
+  applyDateStates();
+});
 
 titleElement.addEventListener("input", renderCalendar);
 yearElement.addEventListener("input", () => {
@@ -243,4 +271,8 @@ yearElement.addEventListener("input", () => {
   }
 }));
 printButton.addEventListener("click", () => window.print());
+paperSizeElement.addEventListener("change", applyPaperSize);
+weekStartElement.addEventListener("change", renderCalendar);
+document.querySelector("#creationDate").textContent = `Created ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+applyPaperSize();
 renderCalendar();

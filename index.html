@@ -3,15 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Papertrail - calendar maker</title>
+  <title>Event Calendar Maker</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <nav class="hud" aria-label="Document controls">
-    <div class="hud-brand"><span class="hud-mark">P</span><span>papertrail / calendar</span></div>
-    <div class="hud-action"><span class="hud-page">A4 / 1 page</span><span class="selection-status" id="selectionStatus" aria-live="polite"></span><button class="hud-button" id="printButton" type="button">Print / save PDF</button></div>
-  </nav>
-
   <main class="stage">
     <article class="paper" id="paper">
       <header class="paper-header">
@@ -24,10 +19,23 @@
       <div class="calendar-layout" id="calendarLayout">
         <div class="month-column" id="monthColumnOne"></div>
         <div class="month-column" id="monthColumnTwo"></div>
-        <aside class="legend-rail" aria-label="Event legend"><p class="legend-label">Legend</p><button class="hud-button event-button" id="addEventButton" type="button" disabled>Add event</button><div class="event-legend" id="eventLegend"><p class="legend-note">Events appear here</p></div></aside>
+        <aside class="legend-rail" aria-label="Event legend and calendar settings">
+          <p class="legend-label">Legend</p>
+          <button class="hud-button event-button" id="addEventButton" type="button" disabled>Add event</button>
+          <button class="clear-events" id="clearEventsButton" type="button" disabled>Remove all events</button>
+          <span class="selection-status" id="selectionStatus" aria-live="polite"></span>
+          <div class="event-legend" id="eventLegend"><p class="legend-note">Events appear here</p></div>
+          <div class="legend-settings" aria-label="Calendar settings">
+            <label for="paperSize">Paper</label>
+            <select class="paper-size" id="paperSize"><option value="a4">A4</option><option value="letter">Letter</option></select>
+            <label for="weekStart">Week starts</label>
+            <select class="week-start" id="weekStart"><option value="1">Monday</option><option value="0">Sunday</option></select>
+          </div>
+        </aside>
       </div>
-      <footer class="paper-footer"><span>papertrail / printable edition</span><span>black ink / A4 portrait</span></footer>
+      <footer class="paper-footer"><span id="creationDate"></span></footer>
     </article>
+    <div class="bottom-controls"><button class="hud-button print-button" id="printButton" type="button">Print / save PDF</button></div>
   </main>
   <script src="app.js"></script>
 </body>
