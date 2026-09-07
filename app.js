@@ -118,17 +118,18 @@ function renderLegend() {
   visibleEvents.forEach((event) => {
     const entry = document.createElement("div");
     entry.className = "legend-entry";
+    const colorWrap = document.createElement("span");
+    colorWrap.className = "legend-color-wrap";
     const colorInput = document.createElement("input");
     colorInput.className = "legend-color";
     colorInput.type = "color";
     colorInput.value = event.color;
-    colorInput.style.backgroundColor = event.color;
     colorInput.setAttribute("aria-label", `Color for ${event.name}`);
     colorInput.addEventListener("input", () => {
       event.color = colorInput.value;
-      colorInput.style.backgroundColor = event.color;
       applyDateStates();
     });
+    colorWrap.append(colorInput);
     const details = document.createElement("span");
     const name = document.createElement("span");
     name.className = "legend-name";
@@ -152,7 +153,7 @@ function renderLegend() {
     range.className = "legend-range";
     range.textContent = formatRange(event.start, event.end);
     details.append(name, range);
-    entry.append(colorInput, details);
+    entry.append(colorWrap, details);
     eventLegend.append(entry);
   });
 }

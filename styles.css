@@ -36,7 +36,7 @@ button:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px soli
 .event-button { color: var(--ink); background: #d7e5df; }
 .selection-status { display: block; min-height: 1.2em; margin-top: 3mm; color: var(--muted); font: 6pt/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-.stage { min-height: 100vh; padding: 70px 32px 50px; }
+.stage { min-height: 100vh; padding: 70px 0px 0px; }
 .paper {
   width: var(--paper-width);
   min-height: var(--paper-height);
@@ -83,17 +83,16 @@ button:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px soli
 .paper-size, .week-start { width: 100%; padding: 3px 4px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink); background: transparent; font: 6pt/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .legend-note { margin: 0; font: 6pt/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .legend-entry { display: grid; grid-template-columns: 5mm 1fr; gap: 2mm; align-items: start; color: var(--ink); font: 6pt/1.25 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
-.legend-color { width: 4mm; height: 4mm; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; appearance: none; -webkit-appearance: none; }
-.legend-color::-webkit-color-swatch-wrapper { padding: 0; }
-.legend-color::-webkit-color-swatch { border: 0; border-radius: 50%; }
+.legend-color-wrap { position: relative; width: 4mm; height: 4mm; margin-top: .3mm; overflow: hidden; border-radius: 50%; background: var(--line); }
+.legend-color { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; padding: 0; border: 0; border-radius: 0; cursor: pointer; }
 .legend-name { cursor: text; }
 .legend-range { display: block; margin-top: 1mm; color: var(--muted); font-size: 5.5pt; white-space: nowrap; }
 .paper-footer { position: absolute; left: 16mm; right: 16mm; bottom: 8mm; display: flex; justify-content: space-between; padding-top: 3mm; border-top: 1px solid var(--line); color: var(--muted); font: 6pt/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .bottom-controls { width: 100%; margin-top: 12px; }
-.print-button { width: 100%; }
+.print-button { width: 100%; height: 5em; border-radius: 4px 4px 0 0;}
 
 @media (max-width: 850px) {
-  .stage { padding: 58px 18px 40px; }
+  .stage { padding: 58px 0px 0px; }
 }
 @media (max-width: 520px) {
   .paper { transform: scale(.82); transform-origin: top center; margin-bottom: -53mm; }
