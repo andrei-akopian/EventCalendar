@@ -2,6 +2,7 @@ const monthNames = ["January", "February", "March", "April", "May", "June", "Jul
 const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 const titleElement = document.querySelector("#paperTitle");
 const yearElement = document.querySelector("#paperYear");
+const subtitleElement = document.querySelector("#paperSubtitle");
 const printButton = document.querySelector("#printButton");
 const addEventButton = document.querySelector("#addEventButton");
 const selectionStatus = document.querySelector("#selectionStatus");
@@ -126,26 +127,10 @@ function renderLegend() {
         name.blur();
       }
     });
-    const description = document.createElement("span");
-    description.className = "legend-description";
-    description.contentEditable = "true";
-    description.role = "textbox";
-    description.ariaLabel = "Event description";
-    description.dataset.placeholder = "Add description";
-    description.textContent = event.description;
-    description.addEventListener("input", () => {
-      event.description = description.textContent.trim();
-    });
-    description.addEventListener("keydown", (inputEvent) => {
-      if (inputEvent.key === "Enter") {
-        inputEvent.preventDefault();
-        description.blur();
-      }
-    });
     const range = document.createElement("span");
     range.className = "legend-range";
     range.textContent = formatRange(event.start, event.end);
-    details.append(name, description, range);
+    details.append(name, range);
     entry.append(colorInput, details);
     eventLegend.append(entry);
   });
@@ -233,7 +218,6 @@ addEventButton.addEventListener("click", () => {
   const hue = (events.length * 137.508) % 360;
   events.push({
     name: name.trim(),
-    description: "",
     start,
     end,
     dates,
@@ -252,7 +236,7 @@ yearElement.addEventListener("input", () => {
   isSelecting = false;
   renderCalendar();
 });
-[titleElement, yearElement].forEach((element) => element.addEventListener("keydown", (event) => {
+[titleElement, yearElement, subtitleElement].forEach((element) => element.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
     element.blur();

@@ -9,7 +9,7 @@
 <body>
   <nav class="hud" aria-label="Document controls">
     <div class="hud-brand"><span class="hud-mark">P</span><span>papertrail / calendar</span></div>
-    <div class="hud-action"><span class="hud-page">A4 / 1 page</span><span class="selection-status" id="selectionStatus" aria-live="polite"></span><button class="hud-button event-button" id="addEventButton" type="button" disabled>Add event</button><button class="hud-button" id="printButton" type="button">Print / save PDF</button></div>
+    <div class="hud-action"><span class="hud-page">A4 / 1 page</span><span class="selection-status" id="selectionStatus" aria-live="polite"></span><button class="hud-button" id="printButton" type="button">Print / save PDF</button></div>
   </nav>
 
   <main class="stage">
@@ -20,11 +20,11 @@
         </div>
         <div id="paperYear" class="paper-year inline-value" contenteditable="true" role="textbox" aria-label="Calendar year" data-placeholder="YYYY">2026</div>
       </header>
-      <p class="paper-subtitle">A quiet overview for the desk, the wall, or the first page of a planning book.</p>
+      <p id="paperSubtitle" class="paper-subtitle inline-value" contenteditable="true" role="textbox" aria-label="Calendar subtitle">A quiet overview for the desk, the wall, or the first page of a planning book.</p>
       <div class="calendar-layout" id="calendarLayout">
         <div class="month-column" id="monthColumnOne"></div>
         <div class="month-column" id="monthColumnTwo"></div>
-        <aside class="legend-rail" aria-label="Event legend"><p class="legend-label">Legend</p><div class="event-legend" id="eventLegend"><p class="legend-note">Events appear here</p></div></aside>
+        <aside class="legend-rail" aria-label="Event legend"><p class="legend-label">Legend</p><button class="hud-button event-button" id="addEventButton" type="button" disabled>Add event</button><div class="event-legend" id="eventLegend"><p class="legend-note">Events appear here</p></div></aside>
       </div>
       <footer class="paper-footer"><span>papertrail / printable edition</span><span>black ink / A4 portrait</span></footer>
     </article>

@@ -91,6 +91,7 @@ button:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px soli
 .day.weekend { color: #8d9695; }
 .legend-rail { min-height: 100%; padding-left: 4mm; border-left: 1px solid var(--line); color: var(--muted); }
 .legend-label { margin: 0; color: var(--ink); font: 700 6pt/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.legend-rail .event-button { width: 100%; margin-top: 5mm; padding: 6px 4px; font-size: 8px; }
 .event-legend { display: grid; gap: 3mm; margin-top: 5mm; }
 .legend-note { margin: 0; font: 6pt/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .legend-entry { display: grid; grid-template-columns: 5mm 1fr; gap: 2mm; align-items: start; color: var(--ink); font: 6pt/1.25 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
@@ -98,8 +99,6 @@ button:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px soli
 .legend-color::-webkit-color-swatch-wrapper { padding: 0; }
 .legend-color::-webkit-color-swatch { border: 0; border-radius: 50%; }
 .legend-name { cursor: text; }
-.legend-description { display: block; margin-top: 1mm; color: var(--muted); cursor: text; }
-.legend-description:empty::before { content: attr(data-placeholder); }
 .legend-range { display: block; margin-top: 1mm; color: var(--muted); font-size: 5.5pt; white-space: nowrap; }
 .paper-footer { position: absolute; left: 16mm; right: 16mm; bottom: 8mm; display: flex; justify-content: space-between; padding-top: 3mm; border-top: 1px solid var(--line); color: var(--muted); font: 6pt/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
 
@@ -117,6 +116,7 @@ button:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px soli
   @page { size: A4 portrait; margin: 0; }
   html, body { width: var(--paper-width); height: var(--paper-height); background: white; }
   .hud { display: none !important; }
+  .legend-rail .event-button { display: none; }
   .stage { min-height: 0; padding: 0; }
   .paper { margin: 0; box-shadow: none; transform: none; }
 }
