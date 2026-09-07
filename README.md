@@ -1,14 +1,17 @@
-- https://www.reddit.com/r/productivity/comments/1ltee4x/school_calendar_how_to_make_one/
-- https://www.reddit.com/r/education/comments/11dnpwq/a_good_school_district_academic_calendar_maker/
+# Event Calendar Maker
 
----
+> [!WARNING] This project is LLM written.
 
-Maker for nice academic calendars, from excel files.
+Calendar maker with range selection to mark events (A4 and Letter), with print and PDF exports.
 
-## Current prototype
+## Technical Details
 
-`index.html` is a dependency-free calendar maker with A4 and Letter print previews. Open it in a browser, edit the title or year directly on the paper, drag across dates, and choose **Add event** to name and color the range. Named events appear in the legend. Then choose **Print / save PDF**. The editor controls are hidden during printing, so the paper preview is the PDF page.
+Dependency-free HTML+CSS+JS. 
 
-The layout and behavior live in `styles.css` and `app.js` so the calendar can grow without making the document markup difficult to work with.
+## TODOs
 
-For the closest match, use the selected paper size, portrait, 100% scale, and zero custom margins in the browser print dialog. Browser PDF engines can still differ slightly in font rendering.
+- [ ] Multiselect non-sequential days for the same event.
+- [ ] Auto import from excel or spreadsheets.
+- [ ] Auto import from .ics files.
+- [ ] Edit event ranges.
+- [ ] LLM written warning, link to homepage, link to about page.
