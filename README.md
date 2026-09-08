@@ -6,7 +6,7 @@ Calendar maker with range and multi-selection to mark events (A4 and Letter), wi
 
 ## Technical Details
 
-Dependency-free HTML+CSS+JS. 
+Dependency-free HTML+CSS+JS. Document state is persisted locally in the browser with `localStorage`.
 
 ## TODOs
 

@@ -12,6 +12,7 @@ const selectionStatus = document.querySelector("#selectionStatus");
 const calendarLayout = document.querySelector("#calendarLayout");
 const eventLegend = document.querySelector("#eventLegend");
 const events = [];
+const storageKey = "event-calendar-maker-state";
 const paperSizes = {
   a4: { width: "210mm", height: "297mm", print: "A4" },
   letter: { width: "215.9mm", height: "279.4mm", print: "Letter" }
@@ -22,6 +23,43 @@ let selectionAnchor = null;
 let selectionBase = new Set();
 let isSelecting = false;
 let didDrag = false;
+
+function saveState() {
+  const state = {
+    title: titleElement.textContent,
+    year: yearElement.textContent,
+    subtitle: subtitleElement.textContent,
+    paperSize: paperSizeElement.value,
+    weekStart: weekStartElement.value,
+    events
+  };
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  } catch {
+    // Persistence is optional when storage is blocked or unavailable.
+  }
+}
+
+function loadState() {
+  try {
+    const state = JSON.parse(localStorage.getItem(storageKey) || "null");
+    if (!state || typeof state !== "object") return;
+    if (typeof state.title === "string") titleElement.textContent = state.title;
+    if (/^\d{4}$/.test(state.year || "")) yearElement.textContent = state.year;
+    if (typeof state.subtitle === "string") subtitleElement.textContent = state.subtitle;
+    if (paperSizes[state.paperSize]) paperSizeElement.value = state.paperSize;
+    if (["0", "1"].includes(String(state.weekStart))) weekStartElement.value = state.weekStart;
+    if (!Array.isArray(state.events)) return;
+    state.events.forEach((event) => {
+      if (!event || typeof event.name !== "string" || !Array.isArray(event.dates) || typeof event.color !== "string") return;
+      const dates = sortedDates(event.dates.filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)));
+      if (dates.length === 0) return;
+      events.push({ name: event.name, dates, color: event.color });
+    });
+  } catch {
+    // Ignore malformed or unavailable persisted state.
+  }
+}
 
 function applyPaperSize() {
   const size = paperSizes[paperSizeElement.value];
@@ -168,6 +206,7 @@ function renderLegend() {
     colorInput.setAttribute("aria-label", `Color for ${event.name}`);
     colorInput.addEventListener("input", () => {
       event.color = colorInput.value;
+      saveState();
       applyDateStates();
     });
     colorWrap.append(colorInput);
@@ -180,6 +219,7 @@ function renderLegend() {
     name.textContent = event.name;
     name.addEventListener("input", () => {
       event.name = name.textContent.trim() || "Unnamed event";
+      saveState();
     });
     name.addEventListener("blur", () => {
       if (!name.textContent.trim()) name.textContent = event.name;
@@ -310,6 +350,7 @@ addEventButton.addEventListener("click", () => {
     dates: sortedDates(selectedDates),
     color: hslToHex(hue, 45, 78)
   });
+  saveState();
   selectedDates.clear();
   renderLegend();
   applyDateStates();
@@ -330,6 +371,7 @@ function beginDateEdit(event) {
 function commitEditingEvent() {
   if (!editingEvent) return;
   if (selectedDates.size > 0) editingEvent.dates = sortedDates(selectedDates);
+  saveState();
   editingEvent = null;
   selectedDates.clear();
   renderLegend();
@@ -344,19 +386,25 @@ document.addEventListener("pointerdown", (event) => {
 clearEventsButton.addEventListener("click", () => {
   if (!events.length || !window.confirm("Remove all events?")) return;
   events.length = 0;
+  saveState();
   editingEvent = null;
   selectedDates.clear();
   renderLegend();
   applyDateStates();
 });
 
-titleElement.addEventListener("input", renderCalendar);
+titleElement.addEventListener("input", () => {
+  saveState();
+  renderCalendar();
+});
 yearElement.addEventListener("input", () => {
   selectedDates.clear();
   editingEvent = null;
+  saveState();
   isSelecting = false;
   renderCalendar();
 });
+subtitleElement.addEventListener("input", saveState);
 [titleElement, yearElement, subtitleElement].forEach((element) => element.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
@@ -364,8 +412,15 @@ yearElement.addEventListener("input", () => {
   }
 }));
 printButton.addEventListener("click", () => window.print());
-paperSizeElement.addEventListener("change", applyPaperSize);
-weekStartElement.addEventListener("change", renderCalendar);
+paperSizeElement.addEventListener("change", () => {
+  saveState();
+  applyPaperSize();
+});
+weekStartElement.addEventListener("change", () => {
+  saveState();
+  renderCalendar();
+});
 document.querySelector("#creationDate").textContent = `Created ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+loadState();
 applyPaperSize();
 renderCalendar();
