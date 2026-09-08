@@ -69,6 +69,8 @@ button:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px soli
 .day.selected { background: #e2e9e6; border-bottom-color: transparent; }
 .day.selected-start { border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); }
 .day.selected-end { border-bottom: 1px solid var(--ink); border-right: 1px solid var(--ink); }
+.day.selected-line-start { border-left: 1px solid var(--ink); }
+.day.selected-line-end { border-right: 1px solid var(--ink); }
 .day.event { color: var(--ink); }
 .day.weekend { color: #8d9695; }
 .legend-rail { min-height: 100%; padding-left: 4mm; border-left: 1px solid var(--line); color: var(--muted); }

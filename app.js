@@ -87,6 +87,10 @@ function datesBetween(first, last) {
   return dates;
 }
 
+function areConsecutiveDates(first, second) {
+  return Boolean(first && second && datesBetween(first, second).length === 2);
+}
+
 function sortedDates(dates) {
   return [...new Set(dates)].sort();
 }
@@ -219,10 +223,17 @@ function applyDateStates() {
     cells.forEach((cell, index) => {
       const previous = cells[index - 1];
       const next = cells[index + 1];
-      const beginsRun = cell.classList.contains("selected") && (!previous || index % 7 === 0 || !previous.classList.contains("selected"));
-      const endsRun = cell.classList.contains("selected") && (!next || (index + 1) % 7 === 0 || !next.classList.contains("selected"));
+      const selected = cell.classList.contains("selected");
+      const continuesFromPrevious = selected && previous?.classList.contains("selected") && areConsecutiveDates(previous.dataset.date, cell.dataset.date);
+      const continuesToNext = selected && next?.classList.contains("selected") && areConsecutiveDates(cell.dataset.date, next.dataset.date);
+      const beginsRun = selected && !continuesFromPrevious;
+      const endsRun = selected && !continuesToNext;
+      const startsWrappedLine = selected && index % 7 === 0 && continuesFromPrevious;
+      const endsWrappedLine = selected && (index + 1) % 7 === 0 && continuesToNext;
       cell.classList.toggle("selected-start", beginsRun);
       cell.classList.toggle("selected-end", endsRun);
+      cell.classList.toggle("selected-line-start", startsWrappedLine);
+      cell.classList.toggle("selected-line-end", endsWrappedLine);
     });
   });
   const selectedCount = selectedDates.size;
