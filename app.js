@@ -40,6 +40,17 @@ function saveState() {
   }
 }
 
+function isValidIsoDate(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const parsed = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return false;
+  return parsed.toISOString().slice(0, 10) === date;
+}
+
+function isHexColor(color) {
+  return /^#[0-9a-f]{6}$/i.test(color);
+}
+
 function loadState() {
   try {
     const state = JSON.parse(localStorage.getItem(storageKey) || "null");
@@ -52,9 +63,9 @@ function loadState() {
     if (!Array.isArray(state.events)) return;
     state.events.forEach((event) => {
       if (!event || typeof event.name !== "string" || !Array.isArray(event.dates) || typeof event.color !== "string") return;
-      const dates = sortedDates(event.dates.filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)));
+      const dates = sortedDates(event.dates.filter(isValidIsoDate));
       if (dates.length === 0) return;
-      events.push({ name: event.name, dates, color: event.color });
+      events.push({ name: event.name, dates, color: isHexColor(event.color) ? event.color : "#cfd8d4" });
     });
   } catch {
     // Ignore malformed or unavailable persisted state.
@@ -204,6 +215,10 @@ function renderLegend() {
     colorInput.type = "color";
     colorInput.value = event.color;
     colorInput.setAttribute("aria-label", `Color for ${event.name}`);
+    colorInput.addEventListener("click", (inputEvent) => {
+      inputEvent.stopPropagation();
+      beginDateEdit(event);
+    });
     colorInput.addEventListener("input", () => {
       event.color = colorInput.value;
       saveState();
@@ -217,9 +232,14 @@ function renderLegend() {
     name.role = "textbox";
     name.ariaLabel = "Event name";
     name.textContent = event.name;
+    name.addEventListener("click", (inputEvent) => {
+      inputEvent.stopPropagation();
+      beginDateEdit(event);
+    });
     name.addEventListener("input", () => {
       event.name = name.textContent.trim() || "Unnamed event";
       saveState();
+      if (editingEvent === event) applyDateStates();
     });
     name.addEventListener("blur", () => {
       if (!name.textContent.trim()) name.textContent = event.name;
@@ -277,11 +297,16 @@ function applyDateStates() {
     });
   });
   const selectedCount = selectedDates.size;
-  addEventButton.disabled = selectedCount === 0;
+  addEventButton.disabled = editingEvent || selectedCount === 0;
   clearEventsButton.disabled = events.length === 0;
   const mode = editingEvent ? `Editing ${editingEvent.name}` : "";
   const count = selectedCount > 0 ? `${selectedCount} day${selectedCount === 1 ? "" : "s"} selected` : "";
   selectionStatus.textContent = [mode, count].filter(Boolean).join(" / ");
+}
+
+function renderEventState() {
+  renderLegend();
+  applyDateStates();
 }
 
 function renderCalendar() {
@@ -290,7 +315,12 @@ function renderCalendar() {
   printButton.disabled = !year || !hasTitle;
   yearElement.classList.toggle("invalid", !year);
   renderLegend();
-  if (!year) return;
+  if (!year) {
+    document.querySelector("#monthColumnOne").replaceChildren();
+    document.querySelector("#monthColumnTwo").replaceChildren();
+    applyDateStates();
+    return;
+  }
   document.querySelector("#monthColumnOne").replaceChildren(...monthNames.slice(0, 6).map((_, index) => createMonth(year, index)));
   document.querySelector("#monthColumnTwo").replaceChildren(...monthNames.slice(6).map((_, index) => createMonth(year, index + 6)));
   applyDateStates();
@@ -352,8 +382,7 @@ addEventButton.addEventListener("click", () => {
   });
   saveState();
   selectedDates.clear();
-  renderLegend();
-  applyDateStates();
+  renderEventState();
 });
 
 function beginDateEdit(event) {
@@ -370,12 +399,13 @@ function beginDateEdit(event) {
 
 function commitEditingEvent() {
   if (!editingEvent) return;
+  const eventIndex = events.indexOf(editingEvent);
   if (selectedDates.size > 0) editingEvent.dates = sortedDates(selectedDates);
+  else if (eventIndex >= 0) events.splice(eventIndex, 1);
   saveState();
   editingEvent = null;
   selectedDates.clear();
-  renderLegend();
-  applyDateStates();
+  renderEventState();
 }
 
 document.addEventListener("pointerdown", (event) => {
@@ -389,8 +419,7 @@ clearEventsButton.addEventListener("click", () => {
   saveState();
   editingEvent = null;
   selectedDates.clear();
-  renderLegend();
-  applyDateStates();
+  renderEventState();
 });
 
 titleElement.addEventListener("input", () => {
