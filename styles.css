@@ -78,6 +78,8 @@ button:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px soli
 .clear-events:hover:not(:disabled) { color: var(--ink); text-decoration: underline; }
 .clear-events:disabled { opacity: .45; cursor: not-allowed; }
 .event-legend { display: grid; gap: 3mm; margin-top: 5mm; }
+.legend-entry { cursor: pointer; }
+.legend-entry.editing { padding: 1mm; margin: -1mm; outline: 1px solid var(--ink); outline-offset: 1px; }
 .legend-settings { display: grid; gap: 1.5mm; margin-top: 7mm; padding-top: 4mm; border-top: 1px solid var(--line); }
 .legend-settings label { color: var(--muted); font: 6pt/1 ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
 .paper-size, .week-start { width: 100%; padding: 3px 4px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink); background: transparent; font: 6pt/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
@@ -86,7 +88,7 @@ button:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px soli
 .legend-color-wrap { position: relative; width: 4mm; height: 4mm; margin-top: .3mm; overflow: hidden; border-radius: 50%; background: var(--line); }
 .legend-color { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; padding: 0; border: 0; border-radius: 0; cursor: pointer; }
 .legend-name { cursor: text; }
-.legend-range { display: block; margin-top: 1mm; color: var(--muted); font-size: 5.5pt; white-space: nowrap; }
+.legend-range { display: block; margin-top: 1mm; color: var(--muted); font-size: 5.5pt; }
 .paper-footer { position: absolute; left: 16mm; right: 16mm; bottom: 8mm; display: flex; justify-content: space-between; padding-top: 3mm; border-top: 1px solid var(--line); color: var(--muted); font: 6pt/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .bottom-controls { width: 100%; margin-top: 12px; }
 .print-button { width: 100%; height: 5em; border-radius: 4px 4px 0 0;}

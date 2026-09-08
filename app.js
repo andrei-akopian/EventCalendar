@@ -16,9 +16,12 @@ const paperSizes = {
   a4: { width: "210mm", height: "297mm", print: "A4" },
   letter: { width: "215.9mm", height: "279.4mm", print: "Letter" }
 };
-let selectionStart = null;
-let selectionEnd = null;
+const selectedDates = new Set();
+let editingEvent = null;
+let selectionAnchor = null;
+let selectionBase = new Set();
 let isSelecting = false;
+let didDrag = false;
 
 function applyPaperSize() {
   const size = paperSizes[paperSizeElement.value];
@@ -84,13 +87,44 @@ function datesBetween(first, last) {
   return dates;
 }
 
-function eventsForDate(date) {
-  return events.filter((event) => event.dates.includes(date) && event.start.slice(0, 4) === String(validYear()));
+function sortedDates(dates) {
+  return [...new Set(dates)].sort();
 }
 
-function formatRange(start, end) {
+function toggledDates(baseDates, datesToToggle) {
+  const result = new Set(baseDates);
+  datesToToggle.forEach((date) => {
+    if (result.has(date)) result.delete(date);
+    else result.add(date);
+  });
+  return result;
+}
+
+function eventIsVisible(event) {
+  return event.dates.some((date) => date.slice(0, 4) === String(validYear()));
+}
+
+function eventsForDate(date) {
+  return events.filter((event) => event.dates.includes(date) && eventIsVisible(event));
+}
+
+function formatDate(date) {
   const options = { month: "short", day: "numeric" };
-  return `${new Date(`${start}T00:00:00Z`).toLocaleDateString("en-US", options)} - ${new Date(`${end}T00:00:00Z`).toLocaleDateString("en-US", options)}`;
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", options);
+}
+
+function formatDateSummary(dates) {
+  const orderedDates = sortedDates(dates);
+  const runs = [];
+  orderedDates.forEach((date) => {
+    const previous = runs.at(-1);
+    if (!previous || datesBetween(previous[1], date).length !== 2) {
+      runs.push([date, date]);
+    } else {
+      previous[1] = date;
+    }
+  });
+  return runs.map(([start, end]) => start === end ? formatDate(start) : `${formatDate(start)} - ${formatDate(end)}`).join(", ");
 }
 
 function hslToHex(hue, saturation, lightness) {
@@ -107,7 +141,7 @@ function hslToHex(hue, saturation, lightness) {
 
 function renderLegend() {
   eventLegend.replaceChildren();
-  const visibleEvents = events.filter((event) => event.start.slice(0, 4) === String(validYear()));
+  const visibleEvents = events.filter(eventIsVisible);
   if (visibleEvents.length === 0) {
     const note = document.createElement("p");
     note.className = "legend-note";
@@ -118,6 +152,9 @@ function renderLegend() {
   visibleEvents.forEach((event) => {
     const entry = document.createElement("div");
     entry.className = "legend-entry";
+    entry.event = event;
+    entry.classList.toggle("editing", event === editingEvent);
+    entry.addEventListener("click", () => beginDateEdit(event));
     const colorWrap = document.createElement("span");
     colorWrap.className = "legend-color-wrap";
     const colorInput = document.createElement("input");
@@ -151,7 +188,7 @@ function renderLegend() {
     });
     const range = document.createElement("span");
     range.className = "legend-range";
-    range.textContent = formatRange(event.start, event.end);
+    range.textContent = formatDateSummary(event.dates);
     details.append(name, range);
     entry.append(colorWrap, details);
     eventLegend.append(entry);
@@ -159,7 +196,6 @@ function renderLegend() {
 }
 
 function applyDateStates() {
-  const selectedDates = new Set(datesBetween(selectionStart, selectionEnd));
   document.querySelectorAll(".day[data-date]").forEach((cell) => {
     const dateEvents = eventsForDate(cell.dataset.date);
     cell.classList.toggle("selected", selectedDates.has(cell.dataset.date));
@@ -192,7 +228,9 @@ function applyDateStates() {
   const selectedCount = selectedDates.size;
   addEventButton.disabled = selectedCount === 0;
   clearEventsButton.disabled = events.length === 0;
-  selectionStatus.textContent = selectedCount > 0 ? `${selectedCount} day${selectedCount === 1 ? "" : "s"} selected` : "";
+  const mode = editingEvent ? `Editing ${editingEvent.name}` : "";
+  const count = selectedCount > 0 ? `${selectedCount} day${selectedCount === 1 ? "" : "s"} selected` : "";
+  selectionStatus.textContent = [mode, count].filter(Boolean).join(" / ");
 }
 
 function renderCalendar() {
@@ -210,6 +248,15 @@ function renderCalendar() {
 function finishSelection() {
   if (!isSelecting) return;
   isSelecting = false;
+  if (!didDrag && selectionAnchor) {
+    selectedDates.clear();
+    selectionBase.forEach((date) => selectedDates.add(date));
+    if (selectionBase.has(selectionAnchor)) selectedDates.delete(selectionAnchor);
+    else selectedDates.add(selectionAnchor);
+  }
+  selectionAnchor = null;
+  selectionBase = new Set();
+  didDrag = false;
   applyDateStates();
 }
 
@@ -217,16 +264,24 @@ calendarLayout.addEventListener("pointerdown", (event) => {
   const day = event.target.closest(".day[data-date]");
   if (!day) return;
   event.preventDefault();
-  selectionStart = day.dataset.date;
-  selectionEnd = day.dataset.date;
+  selectionAnchor = day.dataset.date;
+  selectionBase = editingEvent || event.shiftKey ? new Set(selectedDates) : new Set();
   isSelecting = true;
-  applyDateStates();
+  didDrag = false;
 });
 calendarLayout.addEventListener("pointermove", (event) => {
   if (!isSelecting) return;
   const day = document.elementFromPoint(event.clientX, event.clientY)?.closest(".day[data-date]");
   if (!day) return;
-  selectionEnd = day.dataset.date;
+  if (day.dataset.date !== selectionAnchor) didDrag = true;
+  if (didDrag) {
+    selectedDates.clear();
+    const range = datesBetween(selectionAnchor, day.dataset.date);
+    const nextDates = editingEvent
+      ? toggledDates(selectionBase, range)
+      : new Set([...selectionBase, ...range]);
+    nextDates.forEach((date) => selectedDates.add(date));
+  }
   applyDateStates();
 });
 window.addEventListener("pointerup", finishSelection);
@@ -234,34 +289,60 @@ window.addEventListener("pointercancel", finishSelection);
 window.addEventListener("blur", finishSelection);
 
 addEventButton.addEventListener("click", () => {
+  if (editingEvent) commitEditingEvent();
+  if (selectedDates.size === 0) return;
   const name = window.prompt("Name this event", "");
   if (!name || !name.trim()) return;
-  const dates = datesBetween(selectionStart, selectionEnd);
-  const [start, end] = [selectionStart, selectionEnd].sort();
   const hue = (events.length * 137.508) % 360;
   events.push({
     name: name.trim(),
-    start,
-    end,
-    dates,
+    dates: sortedDates(selectedDates),
     color: hslToHex(hue, 45, 78)
   });
-  selectionStart = null;
-  selectionEnd = null;
+  selectedDates.clear();
   renderLegend();
   applyDateStates();
 });
+
+function beginDateEdit(event) {
+  if (editingEvent === event) return;
+  if (editingEvent && editingEvent !== event) commitEditingEvent();
+  editingEvent = event;
+  selectedDates.clear();
+  event.dates.forEach((date) => selectedDates.add(date));
+  eventLegend.querySelectorAll(".legend-entry").forEach((entry) => {
+    entry.classList.toggle("editing", entry.event === event);
+  });
+  applyDateStates();
+}
+
+function commitEditingEvent() {
+  if (!editingEvent) return;
+  if (selectedDates.size > 0) editingEvent.dates = sortedDates(selectedDates);
+  editingEvent = null;
+  selectedDates.clear();
+  renderLegend();
+  applyDateStates();
+}
+
+document.addEventListener("pointerdown", (event) => {
+  if (!editingEvent || event.target.closest(".legend-entry, .day[data-date]")) return;
+  commitEditingEvent();
+});
+
 clearEventsButton.addEventListener("click", () => {
   if (!events.length || !window.confirm("Remove all events?")) return;
   events.length = 0;
+  editingEvent = null;
+  selectedDates.clear();
   renderLegend();
   applyDateStates();
 });
 
 titleElement.addEventListener("input", renderCalendar);
 yearElement.addEventListener("input", () => {
-  selectionStart = null;
-  selectionEnd = null;
+  selectedDates.clear();
+  editingEvent = null;
   isSelecting = false;
   renderCalendar();
 });
