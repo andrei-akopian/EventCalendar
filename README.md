@@ -1,6 +1,7 @@
 # Event Calendar Maker
 
-> [!WARNING] This project is LLM written.
+> [!WARNING] 
+> This project is LLM written.
 
 Calendar maker with range and multi-selection to mark events (A4 and Letter), with print and PDF exports.
 
